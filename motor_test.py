@@ -3,7 +3,7 @@ from machine import Pin
 
 from enes100 import enes100
 
-enes100.begin(team_name: "matbot", team_type: "MATERIAL", aruco_id: 328, room_num: 1120)
+enes100.begin("matbot", "MATERIAL", 328, 1120)
 
 Pin5 = Pin(23, Pin.OUT) # 5v power for motor driver
 Pin5.value(1)
