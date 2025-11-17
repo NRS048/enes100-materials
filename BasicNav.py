@@ -7,17 +7,18 @@
 # ------------------- <Initialize Code> --------------------
 
 import machine, time
-from machine import Pin, PWM
+from machine import Pin, PWM ,ADC
 
 from hcsr04 import HCSR04
 from hx711_gpio import HX711
 from time import sleep
 from enes100 import enes100
 from dcmotor import DCMotor
+from servo import Servo
 
 enes100.begin("matbot", "MATERIAL", 328, 1120)
 
-#sensor = HCSR04(trigger_pin = 19, echo_pin = 18, echo_timeout_us = 5000)
+sensor = HCSR04(trigger_pin = 19, echo_pin = 18, echo_timeout_us = 5000)
 
 Pin1 = Pin(12, Pin.OUT)
 Pin2 = Pin(13, Pin.OUT)
@@ -33,7 +34,16 @@ motor2 = DCMotor(Pin3, Pin4, enable2)
 loadOUT = Pin(32, Pin.IN, pull=Pin.PULL_DOWN)
 loadSCK = Pin(33, Pin.OUT)
 
-#hx711 = HX711(loadSCK, loadOUT)
+claw_servo = Servo(pin_id=16)
+lift_servo = Servo(pin_id=5)
+
+claw_servo.write(0)
+lift_servo.write(75) #prelift claw
+
+pot = ADC(Pin(34))
+pot.atten(ADC.ATTN_11DB)
+
+hx711 = HX711(loadSCK, loadOUT)
 
 # ----- tool functions -----
 
@@ -51,9 +61,13 @@ def object_detect(): # needs refining?
     distance = sensor.distance_cm()
     return distance #returns distance in CM
 
+def angle_detect():
+    pot_value = pot.read()
+    return pot_value
+
 # ------------------- </Initialize Code> --------------------
 
-def nav1():
+def nav1(): # Navigate to withon 150mm of mission site.
     
     #  --- turn functions ---
     def cw_turn(theta):
@@ -69,6 +83,7 @@ def nav1():
                 #enes100.print(current_location[2])
                 #time.sleep(1)
                 #motor1.forward(5)
+                motor1.forward(5)
                 motor2.forward(5)
             
         return 1
@@ -84,12 +99,13 @@ def nav1():
                 #print("not at goal yet!")
                 #time.sleep(1)
                 motor1.backwards(5)
+                motor2.backwards(5)
         
         return 1
     # --- / turn functions ---
     
     
-    time.sleep(2)s
+    time.sleep(2)
     current_location = where_am_i()
     print(current_location)
     
@@ -119,7 +135,25 @@ def nav1():
         else:
             print("ccw_turn")
             ccw_turn(theta)
-
+        
+        # drive down until y ~= 0.5
+        while current_location[1] < (0.5 + 0.075): # 0.075M is half of the 150mm distance from mission site)
+            where_am_i()
+            
+            if current_location[2] > theta + 0.26:
+                motor1.stop()
+                motor2.stop()
+                cw_turn(theta)
+                
+            if current_location[2] < theta + 0.26:
+                motor1.stop()
+                motor2.stop()
+                ccw_turn(theta)
+                
+            motor1.backward(5)
+            motor2.forward(5)
+            
+            time.sleep(0.25)
         
     elif current_location[1] < 1:
         theta = 3 * math.pi / 2
@@ -136,6 +170,8 @@ def nav1():
         else:
             print("cw_turn")
             cw_turn(theta)
+            
+        #drive up until y ~= 1.5
     
     # def nav_site(): ?
     # brainstorm:
@@ -143,14 +179,58 @@ def nav1():
     # drive to within half distance, then "scan" for the block using rear mounted vision system?
     # block side/corner detection?
     #
+
+def mso():
+    print("all mission objectives")
     
-def mso1():
-    print("mso1 - weigh/transmit")
+    claw_servo.write(0)
+    lift_servo.write(0)
     
-def mso2():
-    print("mso2 - squish/transmit")
+    time.sleep(5)
     
-def mso3():
-    print("mso3 - something")
+    #material - as soon as we squeeze we will know if it is plastic or foam
+    
+    pot_angle = 0
+    
+    pot_zero = 2020 #0 -> 4095 # this is a guess to where the cener/zero position is, it can be checked. 
+
+    pot_old = 0 # used to compare values, to check when the squishing stops and to prevent stall. 
+    
+    lift_angle = 30
+    
+    print(angle_detect)
+    return # --------------------
+    
+    while angle_detect - pot_old > 10:
+        pot_angle = pot_angle + 5
+        
+        claw_servo.write(pot_angle)
+        
+        time.sleep(0.25)
+    
+    if angle_detect < 3000:
+        enes100.mission('MATERIAL_TYPE', 'FOAM')
+    else:
+        enes100.mission('MATERIAL_TYPE', 'PLASTIC')
+    
+    #lift - get the servo to squeeze and lift
+    
+    claw_servo.write(pot_angle+5)
+    
+    lift_servo.write(lift_angle) #might be right, might be reversed, might crash, idk
+    
+    
+    
+    #weight - use load cell
+  
+#def mso1():
+#    print("mso1 - weigh/transmit")
+    
+#def mso2():
+#    print("mso2 - squish/transmit")
+    
+#def mso3():
+#    print("mso3 - lift")
     
 nav1()
+#mso()
