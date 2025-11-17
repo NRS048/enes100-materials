@@ -137,23 +137,26 @@ def nav1(): # Navigate to withon 150mm of mission site.
             ccw_turn(theta)
         
         # drive down until y ~= 0.5
-        while current_location[1] < (0.5 + 0.075): # 0.075M is half of the 150mm distance from mission site)
+        while current_location[1] > (0.5 + 0.075): # 0.075M is half of the 150mm distance from mission site)
             where_am_i()
             
-            if current_location[2] > theta + 0.26:
-                motor1.stop()
-                motor2.stop()
-                cw_turn(theta)
+            #if current_location[2] > theta + 0.26:
+            #    motor1.stop()
+            #    motor2.stop()
+            #    cw_turn(theta)
                 
-            if current_location[2] < theta + 0.26:
-                motor1.stop()
-                motor2.stop()
-                ccw_turn(theta)
+            #if current_location[2] < theta + 0.26:
+            #    motor1.stop()
+            #    motor2.stop()
+            #    ccw_turn(theta)
                 
             motor1.backward(5)
             motor2.forward(5)
             
-            time.sleep(0.25)
+            time.sleep(0.125)
+            
+        motor1.stop()
+        motor2.stop()
         
     elif current_location[1] < 1:
         theta = 3 * math.pi / 2
@@ -172,6 +175,26 @@ def nav1(): # Navigate to withon 150mm of mission site.
             cw_turn(theta)
             
         #drive up until y ~= 1.5
+        while current_location[1] < (1.5 - 0.075): # 0.075M is half of the 150mm distance from mission site)
+            where_am_i()
+            
+            #if current_location[2] > theta + 0.26:
+            #    motor1.stop()
+            #    motor2.stop()
+            #    cw_turn(theta)
+                
+            #if current_location[2] < theta + 0.26:
+            #    motor1.stop()
+            #    motor2.stop()
+            #    ccw_turn(theta)
+                
+            motor1.backward(5)
+            motor2.forward(5)
+            
+            time.sleep(0.125)
+
+        motor1.stop()
+        motor2.stop()
     
     # def nav_site(): ?
     # brainstorm:
@@ -184,7 +207,7 @@ def mso():
     print("all mission objectives")
     
     claw_servo.write(0)
-    lift_servo.write(0)
+    lift_servo.write(90)
     
     time.sleep(5)
     
