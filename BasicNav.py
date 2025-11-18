@@ -35,10 +35,10 @@ loadOUT = Pin(32, Pin.IN, pull=Pin.PULL_DOWN)
 loadSCK = Pin(33, Pin.OUT)
 
 claw_servo = Servo(pin_id=16)
-lift_servo = Servo(pin_id=5)
+lift_servo = Servo(pin_id=23)
 
-claw_servo.write(0)
-lift_servo.write(75) #prelift claw
+claw_servo.write(70) #use 40 for grab, 70 for open
+lift_servo.write(90) #prelift claw
 
 pot = ADC(Pin(34))
 pot.atten(ADC.ATTN_11DB)
@@ -63,7 +63,7 @@ def object_detect(): # needs refining?
 
 def angle_detect():
     pot_value = pot.read()
-    return pot_value
+    return int(pot_value)
 
 # ------------------- </Initialize Code> --------------------
 
@@ -206,43 +206,33 @@ def nav1(): # Navigate to withon 150mm of mission site.
 def mso():
     print("all mission objectives")
     
-    claw_servo.write(0)
-    lift_servo.write(90)
+    claw_servo.write(70)
+    #lift_servo.write(90) # lift not working
     
     time.sleep(5)
     
     #material - as soon as we squeeze we will know if it is plastic or foam
     
-    pot_angle = 0
+    claw_servo.write(40)
     
-    pot_zero = 2020 #0 -> 4095 # this is a guess to where the cener/zero position is, it can be checked. 
-
-    pot_old = 0 # used to compare values, to check when the squishing stops and to prevent stall. 
+    time.sleep(4)
     
-    lift_angle = 30
+    old_angle = angle_detect()
     
-    print(angle_detect)
-    return # --------------------
+    #print(old_angle)
     
-    while angle_detect - pot_old > 10:
-        pot_angle = pot_angle + 5
-        
-        claw_servo.write(pot_angle)
-        
-        time.sleep(0.25)
+    claw_servo.write(30)
     
-    if angle_detect < 3000:
+    time.sleep(4)
+    
+    #print(angle_detect()) #will read around 1936 for plastic, 1836 for foam
+    
+    if angle_detect() < 1900:
         enes100.mission('MATERIAL_TYPE', 'FOAM')
     else:
         enes100.mission('MATERIAL_TYPE', 'PLASTIC')
     
     #lift - get the servo to squeeze and lift
-    
-    claw_servo.write(pot_angle+5)
-    
-    lift_servo.write(lift_angle) #might be right, might be reversed, might crash, idk
-    
-    
     
     #weight - use load cell
   
@@ -255,5 +245,5 @@ def mso():
 #def mso3():
 #    print("mso3 - lift")
     
-nav1()
-#mso()
+#nav1()
+mso()
