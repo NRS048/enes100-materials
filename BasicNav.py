@@ -16,7 +16,7 @@ from enes100 import enes100
 from dcmotor import DCMotor
 from servo import Servo
 
-enes100.begin("matbot", "MATERIAL", 328, 1120)
+#enes100.begin("matbot", "MATERIAL", 328, 1120)
 
 sensor = HCSR04(trigger_pin = 19, echo_pin = 18, echo_timeout_us = 5000)
 
@@ -72,6 +72,11 @@ def get_weight(): #input theta in degrees for sanity of troubleshooting in mso2 
     return value
 
 # ------------------- </Initialize Code> --------------------
+
+def nav2():
+    motor1.backwards(50)
+    motor2.forward(50)
+    
 
 def nav1(): # Navigate to withon 150mm of mission site.
     
@@ -274,5 +279,5 @@ def mso3():
     
     lift_servo.write(90)
     
-#nav1()
-mso1()
+nav2()
+# mso1()
