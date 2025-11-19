@@ -6,7 +6,7 @@
 #
 # ------------------- <Initialize Code> --------------------
 
-import machine, time
+import machine, time, math
 from machine import Pin, PWM ,ADC
 
 from hcsr04 import HCSR04
@@ -16,7 +16,7 @@ from enes100 import enes100
 from dcmotor import DCMotor
 from servo import Servo
 
-enes100.begin("matbot", "MATERIAL", 328, 1120)
+#enes100.begin("matbot", "MATERIAL", 328, 1120)
 
 sensor = HCSR04(trigger_pin = 19, echo_pin = 18, echo_timeout_us = 5000)
 
@@ -38,12 +38,13 @@ claw_servo = Servo(pin_id=16)
 lift_servo = Servo(pin_id=23)
 
 claw_servo.write(70) #use 40 for grab, 70 for open
-lift_servo.write(90) #prelift claw
+lift_servo.write(75) #prelift claw
 
 pot = ADC(Pin(34))
 pot.atten(ADC.ATTN_11DB)
 
 hx711 = HX711(loadSCK, loadOUT)
+hx711.tare()
 
 # ----- tool functions -----
 
@@ -65,7 +66,12 @@ def angle_detect():
     pot_value = pot.read()
     return int(pot_value)
 
-def 
+def get_weight(theta): #input theta in degrees for sanity of troubleshooting in mso2 function later.
+    value = hx711.get_value() / -823 # -823 is a calibration value to convert the amplified data to grams.
+    
+    value_adjusted = value / math.cos(theta * (math.pi / 180))
+    
+    return value_adjusted
 
 # ------------------- </Initialize Code> --------------------
 
@@ -241,9 +247,49 @@ def mso1():
 def mso2():
     print("weight + transmit")
     
+    # Ball masses ±20 g: 105 g, 190 g, 275 g
+    # Cutoffs, 80g < m < 148g, 148g < m < 233g, 233g < m < 300g
     
-#def mso3():
-#    print("mso3 - lift")
+    
+    lift_servo.write(75) #15 degrees above horizontal
+    claw_servo.write(70)
+    
+    time.sleep(5)
+    
+    claw_servo.write(35)
+    
+    time.sleep(1)
+    
+    lift_servo.write(60)
+
+    mass = get_weight(30)
+    
+    print(mass)
+    
+    if (mass < 148 and mass > 80):
+        print("light")
+    elif (mass < 233 and mass > 148):
+        print("medium")
+    elif (mass < 300 and mass > 233):
+        print("heavy")
+    else:
+        print("something went wrong")
+    
+    
+    
+#    i = 0
+#    while i < 10:
+#        print(get_weight(30))
+#        i+=1
+    
+def mso3():
+    print("mso3 - lift")
+    
+    lift_servo.write(0)
+    
+    time.sleep(2)
+    
+    lift_servo.write(90)
     
 #nav1()
-mso1()
+mso2()
