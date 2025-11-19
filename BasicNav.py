@@ -203,8 +203,8 @@ def nav1(): # Navigate to withon 150mm of mission site.
     # block side/corner detection?
     #
 
-def mso():
-    print("all mission objectives")
+def mso1():
+    print("squish + transmit")
     
     claw_servo.write(70)
     #lift_servo.write(90) # lift not working
@@ -235,15 +235,12 @@ def mso():
     #lift - get the servo to squeeze and lift
     
     #weight - use load cell
-  
-#def mso1():
-#    print("mso1 - weigh/transmit")
     
 #def mso2():
-#    print("mso2 - squish/transmit")
+#    print("weight + transmit")
     
 #def mso3():
 #    print("mso3 - lift")
     
 #nav1()
-mso()
+mso1()
