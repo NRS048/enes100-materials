@@ -16,7 +16,7 @@ from enes100 import enes100
 from dcmotor import DCMotor
 from servo import Servo
 
-#enes100.begin("matbot", "MATERIAL", 328, 1120)
+enes100.begin("matbot", "MATERIAL", 328, 1120)
 
 sensor = HCSR04(trigger_pin = 19, echo_pin = 18, echo_timeout_us = 5000)
 
@@ -260,8 +260,10 @@ def mso2():
     lift_servo.write(60)
     
     time.sleep(2)
-    
-    print(hx711.get_value())
+
+    while 1:   
+        print(hx711.get_value() / -823)
+        time.sleep(.125)
     
 def mso3():
     print("mso3 - lift")
@@ -273,4 +275,4 @@ def mso3():
     lift_servo.write(90)
     
 #nav1()
-mso2()
+mso1()
