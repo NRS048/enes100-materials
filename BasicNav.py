@@ -7,7 +7,7 @@
 # ------------------- <Initialize Code> --------------------
 
 import machine, time, math
-from machine import Pin, PWM ,ADC
+from machine import Pin, PWM, ADC
 
 from hcsr04 import HCSR04
 from hx711_gpio import HX711
@@ -31,10 +31,10 @@ enable2 = PWM(Pin(27), 15000)
 motor1 = DCMotor(Pin1, Pin2, enable1)
 motor2 = DCMotor(Pin3, Pin4, enable2)
 
-loadOUT = Pin(32, Pin.IN, pull=Pin.PULL_DOWN)
-loadSCK = Pin(33, Pin.OUT)
+loadOUT = Pin(17, Pin.IN, pull=Pin.PULL_DOWN)
+loadSCK = Pin(5, Pin.OUT)
 
-claw_servo = Servo(pin_id=16)
+claw_servo = Servo(pin_id=16) #replaced with code in mso2
 lift_servo = Servo(pin_id=23)
 
 claw_servo.write(70) #use 40 for grab, 70 for open
@@ -66,12 +66,10 @@ def angle_detect():
     pot_value = pot.read()
     return int(pot_value)
 
-def get_weight(theta): #input theta in degrees for sanity of troubleshooting in mso2 function later.
+def get_weight(): #input theta in degrees for sanity of troubleshooting in mso2 function later.
     value = hx711.get_value() / -823 # -823 is a calibration value to convert the amplified data to grams.
     
-    value_adjusted = value / math.cos(theta * (math.pi / 180))
-    
-    return value_adjusted
+    return value
 
 # ------------------- </Initialize Code> --------------------
 
@@ -249,38 +247,21 @@ def mso2():
     
     # Ball masses ±20 g: 105 g, 190 g, 275 g
     # Cutoffs, 80g < m < 148g, 148g < m < 233g, 233g < m < 300g
-    
-    
+
     lift_servo.write(75) #15 degrees above horizontal
     claw_servo.write(70)
     
-    time.sleep(5)
+    time.sleep(2)
     
     claw_servo.write(35)
     
-    time.sleep(1)
+    time.sleep(2)
     
     lift_servo.write(60)
-
-    mass = get_weight(30)
     
-    print(mass)
+    time.sleep(2)
     
-    if (mass < 148 and mass > 80):
-        print("light")
-    elif (mass < 233 and mass > 148):
-        print("medium")
-    elif (mass < 300 and mass > 233):
-        print("heavy")
-    else:
-        print("something went wrong")
-    
-    
-    
-#    i = 0
-#    while i < 10:
-#        print(get_weight(30))
-#        i+=1
+    print(hx711.get_value())
     
 def mso3():
     print("mso3 - lift")
