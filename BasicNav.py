@@ -65,6 +65,8 @@ def angle_detect():
     pot_value = pot.read()
     return int(pot_value)
 
+def 
+
 # ------------------- </Initialize Code> --------------------
 
 def nav1(): # Navigate to withon 150mm of mission site.
@@ -236,8 +238,9 @@ def mso1():
     
     #weight - use load cell
     
-#def mso2():
-#    print("weight + transmit")
+def mso2():
+    print("weight + transmit")
+    
     
 #def mso3():
 #    print("mso3 - lift")
