@@ -89,32 +89,41 @@ def angle_detect():
     return int(pot_value)
 
 def get_weight(): #input theta in degrees for sanity of troubleshooting in mso2 function later.
-    value = hx711.get_value() / -823 # -823 is a calibration value to convert the amplified data to grams.
+    value = hx711.get_value() / -823 # -823 is a calibration value to convert the amplified data to grams. Needs recalibration & verification for during lift.
     
     return value
 
 # ------------------- </Initialize Code> --------------------
 
-def nav1(): # Navigate to withon 150mm of mission site.
+def nav1(): # Navigate to within 150mm of mission site.
     
-    #  --- turn functions
-    
-    def turn(dtheta):
+    #  --- turn function
+    def turn(dtheta): 
         time = dtheta / 1.57
+        
         if time < 0:
+            motor1.forward(2)
+            motor2.forward(2)
+            time.sleep(time)
+            motor1.stop()
+            motor2.stop()
             #cw
         elif time > 0:
+            motor1.backwards(2)
+            motor2.backwards(2)
+            time.sleep(time)
+            motor1.stop()
+            motor2.stop()
             #ccw
+            
+    # --- / turn function ---
     
     
-    # --- / turn functions ---
-    
-    
-    time.sleep(2)
+    time.sleep(2) # delay to ensure proper connection to vision system
     current_location = where_am_i()
-    print(current_location)
+    #print(current_location)
     
-    if current_location[0] is None:
+    if current_location[0] is None: # end run if not visible to vision system
         print("lost")
         return
         
@@ -127,7 +136,7 @@ def nav1(): # Navigate to withon 150mm of mission site.
     # 2 * math.pi = 6.28
         
     if current_location[1] > 1: # top half of arena
-        theta = math.pi / 2 # goal direction, want to face straight up, drive down leading with sensor.
+        theta = 1.57 # goal direction, want to face straight up, drive down leading with sensor. ( math.pi / 2 )
         
         print ("top")
         
@@ -141,23 +150,33 @@ def nav1(): # Navigate to withon 150mm of mission site.
             
         else: # if we are facing somewhere in the 1st of 4th quadrant of the unit circle.
             print("ccw_turn")
-            dtheta = theta + 6.28 - current_location[2] # should be positive
-            ccw_turn(theta)
+            if current_location[2] < 1.57: # quadrant one
+                dtheta = theta - current_location[2] # should be positive
+            else: # quadrant four (seperate b/c the transfer from theta = 2pi to theta = 0 gets messy)
+                dtheta = theta + 6.28 - current_location[2] # should be positive
+            
+            turn(dtheta)
             
     elif current_location[1] < 1: # bottom half of arena
-        theta = 3 * math.pi / 2 # goal direction
+        theta = 4.71 # goal direction ( 3 * math.pi / 2) 
         
         print ("bottom")
             
-        if (current_location[2] > (theta - 0.26) and current_location[2] < (theta + 0.26)):
+        if (current_location[2] > (theta - 0.26) and current_location[2] < (theta + 0.26)): # This will not happen. If we are facing the correct way
             print("correct orientation")
             
-        elif (current_location[2] < (theta - 0.26) and current_location[2] > 1.57 ):
+        elif (current_location[2] < (theta - 0.26) and current_location[2] > 1.57 ): # if we are facing somewhere in the 2nd or 3rd quadrant
             print("ccw_turn")
-            ccw_turn(theta)
+            dtheta = theta - current_location[2] # should be positive
+            turn(dtheta)
             
-        else:
-            print("cw_turn")
-            cw_turn(theta)
+        else: # quadrants one and four 
+            print("cw_turn") # if we are facing somewhere in the 1st or 4th quadrant
+            if current_location[2] < 1.57: # quadrant one
+                dtheta = theta - current_location[2] - 6.28 # should be negative
+            else: # quadrant four (seperate b/c the transfer from theta = 2pi to theta = 0 gets messy)
+                dtheta = theta - current_location[2]
+                
+            turn(dtheta)
         
 nav1()
