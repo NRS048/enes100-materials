@@ -99,19 +99,36 @@ def nav1(): # Navigate to within 150mm of mission site.
     
     #  --- turn function
     def turn(dtheta): 
-        time = dtheta / 1.57
+        waittime = round((dtheta / 1.57), 2)
         
-        if time < 0:
+        enes100.print(dtheta)
+        
+        if waittime < 0:
+            enes100.print("cw")
             motor1.forward(2)
             motor2.forward(2)
-            time.sleep(time)
+            
+            oldtime = time.time()
+            
+            while time.time() - oldtime < abs(waittime): # makeshift time.sleep(s) function
+                continue
+            
+            enes100.print("stop cw")
             motor1.stop()
             motor2.stop()
             #cw
-        elif time > 0:
+            
+        elif waittime > 0:
+            enes100.print("ccw")
             motor1.backwards(2)
             motor2.backwards(2)
-            time.sleep(time)
+            
+            oldtime = time.time()
+            
+            while time.time() - oldtime < abs(waittime):
+                continue
+            
+            enes100.print("stop ccw")
             motor1.stop()
             motor2.stop()
             #ccw
@@ -134,49 +151,59 @@ def nav1(): # Navigate to within 150mm of mission site.
     # math.pi / 2 = 1.57
     # 3 * math.pi / 4 = 4.71
     # 2 * math.pi = 6.28
-        
-    if current_location[1] > 1: # top half of arena
-        theta = 1.57 # goal direction, want to face straight up, drive down leading with sensor. ( math.pi / 2 )
-        
-        print ("top")
-        
-        if (current_location[2] > (theta - 0.26) and current_location[2] < (theta + 0.26)): # this will not happen. If our current orientation is correct (pointed towards block)
-            print("correct orientation")
+    def orient():
+        if current_location[1] > 1: # top half of arena
+            theta = 1.57 # goal direction, want to face straight up, drive down leading with sensor. ( math.pi / 2 )
             
-        elif (current_location[2] > (theta + 0.26) and current_location[2] < 4.71 ): # if we are facing somewhere in 2nd or 3rd quadrant of the unit circle
-            print("cw_turn")
-            dtheta = theta - current_location[2] # should be negative
-            turn(dtheta)
+            print ("top")
             
-        else: # if we are facing somewhere in the 1st of 4th quadrant of the unit circle.
-            print("ccw_turn")
-            if current_location[2] < 1.57: # quadrant one
-                dtheta = theta - current_location[2] # should be positive
-            else: # quadrant four (seperate b/c the transfer from theta = 2pi to theta = 0 gets messy)
-                dtheta = theta + 6.28 - current_location[2] # should be positive
-            
-            turn(dtheta)
-            
-    elif current_location[1] < 1: # bottom half of arena
-        theta = 4.71 # goal direction ( 3 * math.pi / 2) 
-        
-        print ("bottom")
-            
-        if (current_location[2] > (theta - 0.26) and current_location[2] < (theta + 0.26)): # This will not happen. If we are facing the correct way
-            print("correct orientation")
-            
-        elif (current_location[2] < (theta - 0.26) and current_location[2] > 1.57 ): # if we are facing somewhere in the 2nd or 3rd quadrant
-            print("ccw_turn")
-            dtheta = theta - current_location[2] # should be positive
-            turn(dtheta)
-            
-        else: # quadrants one and four 
-            print("cw_turn") # if we are facing somewhere in the 1st or 4th quadrant
-            if current_location[2] < 1.57: # quadrant one
-                dtheta = theta - current_location[2] - 6.28 # should be negative
-            else: # quadrant four (seperate b/c the transfer from theta = 2pi to theta = 0 gets messy)
-                dtheta = theta - current_location[2]
+            if (current_location[2] > (theta - 0.26) and current_location[2] < (theta + 0.26)): # this will not happen. If our current orientation is correct (pointed towards block)
+                print("correct orientation")
                 
-            turn(dtheta)
+            elif (current_location[2] > (theta + 0.26) and current_location[2] < 4.71 ): # if we are facing somewhere in 2nd or 3rd quadrant of the unit circle
+                print("cw_turn")
+                dtheta = theta - current_location[2] # should be negative
+                turn(dtheta)
+                
+            else: # if we are facing somewhere in the 1st of 4th quadrant of the unit circle.
+                print("ccw_turn")
+                if current_location[2] < 1.57: # quadrant one
+                    dtheta = theta - current_location[2] # should be positive
+                else: # quadrant four (seperate b/c the transfer from theta = 2pi to theta = 0 gets messy)
+                    dtheta = theta + 6.28 - current_location[2] # should be positive
+                
+                turn(dtheta)
+                
+        elif current_location[1] < 1: # bottom half of arena
+            theta = 4.71 # goal direction ( 3 * math.pi / 2) 
+            
+            print ("bottom")
+                
+            if (current_location[2] > (theta - 0.26) and current_location[2] < (theta + 0.26)): # This will not happen. If we are facing the correct way
+                print("correct orientation")
+                
+            elif (current_location[2] < (theta - 0.26) and current_location[2] > 1.57 ): # if we are facing somewhere in the 2nd or 3rd quadrant
+                print("ccw_turn")
+                dtheta = theta - current_location[2] # should be positive
+                turn(dtheta)
+                
+            else: # quadrants one and four 
+                print("cw_turn") # if we are facing somewhere in the 1st or 4th quadrant
+                if current_location[2] < 1.57: # quadrant one
+                    dtheta = theta - current_location[2] - 6.28 # should be negative
+                else: # quadrant four (seperate b/c the transfer from theta = 2pi to theta = 0 gets messy)
+                    dtheta = theta - current_location[2]
+                    
+                turn(dtheta)
+    orient()
+    
+    current_location = where_am_i()
+    
+    if current_location[1] > 1: # top
+        if not (current_location[2] < 1.57 + 0.26 and current_location[2] > 1.57 - 0.26):
+            
+    else: # bottom
+        if not (current_location[2] < 1.57 + 0.26 and current_location[2] > 1.57 - 0.26):
+            orient()
         
 nav1()
