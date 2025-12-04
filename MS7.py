@@ -99,7 +99,7 @@ def nav1(): # Navigate to within 150mm of mission site.
     
     #  --- turn function
     def turn(dtheta): 
-        waittime = round((dtheta / 1.57), 2)
+        waittime = round((dtheta * 0.8), 2) #0.8 comes from solving 2.5s = 180 degrees
         
         enes100.print(dtheta)
         
@@ -197,11 +197,13 @@ def nav1(): # Navigate to within 150mm of mission site.
                 turn(dtheta)
     orient()
     
+    return
+    
     current_location = where_am_i()
     
     if current_location[1] > 1: # top
         if not (current_location[2] < 1.57 + 0.26 and current_location[2] > 1.57 - 0.26):
-            
+            orient()
     else: # bottom
         if not (current_location[2] < 1.57 + 0.26 and current_location[2] > 1.57 - 0.26):
             orient()
