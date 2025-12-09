@@ -208,4 +208,4 @@ def nav1(): # Navigate to within 150mm of mission site.
         if not (current_location[2] < 1.57 + 0.26 and current_location[2] > 1.57 - 0.26):
             orient()
         
-nav1()
+nav1() 
