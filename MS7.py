@@ -81,8 +81,8 @@ def where_am_i():
     return current_location
 
 def object_detect(): # needs refining?
-    distance = sensor.distance_cm()
-    return distance #returns distance in CM
+    distance = sensor.distance_mm()
+    return distance #returns distance in mm
 
 def angle_detect():
     pot_value = pot.read()

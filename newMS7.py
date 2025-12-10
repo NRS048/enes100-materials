@@ -12,7 +12,7 @@ from enes100 import enes100
 from dcmotor import DCMotor
 from servo import Servo
 
-enes100.begin("matbot", "MATERIAL", 328, 1120) # vision system setup
+#enes100.begin("matbot", "MATERIAL", 328, 1120) # vision system setup
 
 sensor = HCSR04(trigger_pin = 19, echo_pin = 18, echo_timeout_us = 5000) # untrasonic distance sensor setup.
 
@@ -69,36 +69,34 @@ def get_weight(): #input theta in degrees for sanity of troubleshooting in mso2 
 
 # ------------------- </Initialize Code> --------------------
 
-def cwturn(theta):
-    while True:
-        motor1.forward(2)
-        
-        oldtime = time.time()
-        
-        while time.time() - oldtime < .0625: # makeshift time.sleep(s) function
-                continue
-            
-        motor1.stop()
-        motor2.stop()
-        current_location = where_am_i()
-        time.sleep(.25)
-        
-        if (current_location[2] < theta + 0.26) and (current_location[2] > theta - 0.26):
-            enes100.print("break")
-            break
-        
-    enes100.print("good")
+#def cwturn(theta):
+#   while True:
+#        motor1.forward(2)
+#        
+#        oldtime = time.time()
+#        
+#        while time.time() - oldtime < .0625: # makeshift time.sleep(s) function
+#                continue
+#            
+#        motor1.stop()
+#        motor2.stop()
+#        current_location = where_am_i()
+#        time.sleep(.25)
+#        
+#        if (current_location[2] < theta + 0.26) and (current_location[2] > theta - 0.26):
+#            enes100.print("break")
+#            break
+#        
+#    enes100.print("good")
 
 # ------------------ mission objectives ------------------ 
 
-enes100.print("squish + transmit")
+#enes100.print("squish + transmit")
     
 claw_servo.write(70)
 lift_servo.write(90)
 
 time.sleep(3)
-
-#material - as soon as we squeeze we will know if it is plastic or foam
 
 claw_servo.write(40)
 
@@ -108,30 +106,42 @@ old_angle = angle_detect()
 
 enes100.print(old_angle)
 
+time.sleep(0.5)
+
 claw_servo.write(30)
 
-time.sleep(4)
+time.sleep(2)
 
 enes100.print(angle_detect())
 
-if old_angle - angle_detect() > 75: # old_angle - angle_detect() to find "delta squish" and compare for both plastic and foam
-    enes100.mission('MATERIAL_TYPE', 'FOAM')
+new_angle = angle_detect()
+
+print(old_angle)
+print(new_angle)
+
+if old_angle - new_angle > 80: # old_angle - angle_detect() to find "delta squish" and compare for both plastic and foam #122 for foam # 51 for plastic
+    #enes100.mission('MATERIAL_TYPE', 'FOAM')
+    print("foam")
 else:
-    enes100.mission('MATERIAL_TYPE', 'PLASTIC')
-    
+    #enes100.mission('MATERIAL_TYPE', 'PLASTIC')
+    print("plastic")
+
 lift_servo.write(60)
 
 time.sleep(2)
 
 weight = (hx711.get_value() * 175.1/-35475.458) + 9.5
 
-if weight > 231:
-    enes100.mission('WEIGHT', 'HEAVY')
-elif weight > 143.45:
-    enes100.mission('WEIGHT', 'MEDIUM')
-else:
-    enes100.mission('WEIGHT', 'LIGHT')
+#enes100.print(weight)
+print(weight)
 
+if weight > 300: #231
+    #enes100.mission('WEIGHT', 'HEAVY')
+    print("Heavy")
+elif weight > 150: #143.5
+    #enes100.mission('WEIGHT', 'MEDIUM')
+    print("Medium")
+else:
+    #enes100.mission('WEIGHT', 'LIGHT')
+    print("Light")
     
-    
-        
