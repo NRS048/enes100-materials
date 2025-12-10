@@ -123,7 +123,7 @@ lift_servo.write(60)
 
 time.sleep(2)
 
-weight = hx711.get_value() * 175.1/-35475.458) + 9.5
+weight = (hx711.get_value() * 175.1/-35475.458) + 9.5
 
 if weight > 231:
     enes100.mission('WEIGHT', 'HEAVY')
